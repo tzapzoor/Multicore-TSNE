@@ -234,11 +234,11 @@ double TSNE<treeT, dist_fn>::computeGradient(int* inp_row_P, int* inp_col_P, dou
 
     // NoneEdge forces
     for (int n = 0; n < N; n++) {
-        g.run([&](int index) {
+        g.run([&, n] {
             double this_Q = .0;
-            tree->computeNonEdgeForces(index, theta, neg_f + index * no_dims, &this_Q);
-            Q[index] = this_Q;
-        }, n);
+            tree->computeNonEdgeForces(n, theta, neg_f + n * no_dims, &this_Q);
+            Q[n] = this_Q;
+        });
     }
 
     for (int n = 0; n < N; n++) {
