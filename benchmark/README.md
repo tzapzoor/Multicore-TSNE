@@ -9,8 +9,47 @@ sys     0m0.021s
 
 #### TBB
 
+##### Iteration 3
+
+Create parallel tasks in `SplitTree:computeNonEdgeForces` only for subtrees with a size bigger than a certain threshold. After trying multiple thersholds, found that it behaves best with 300: Could this number be inferred automatically?
+
+```
+$ time ./benchmark 1000 500 3 1
+real    0m41.800s
+user    0m41.743s
+sys     0m0.034s
+
+$ time ./benchmark 1000 500 3 2
+real    0m27.904s
+user    0m51.861s
+sys     0m0.089s
+
+$ time ./benchmark 1000 500 3 4
+real    0m18.945s
+user    1m2.132s
+sys     0m0.237s
+
+$ time ./benchmark 1000 500 3 8
+real    0m11.306s
+user    1m2.376s
+sys     0m0.416s
+
+$ time ./benchmark 1000 500 3 16
+real    0m9.249s
+user    1m26.994s
+sys     0m1.110s
+
+$ time ./benchmark 1000 500 3 24
+real    0m8.369s
+user    1m39.978s
+sys     0m2.101s
+```
+
 ##### Iteration 2
 
+Parallelize the `SplitTree` traversal for `computeNonEdgeForces`.
+
+```
 $ time ./benchmark 1000 500 3 1
 real    1m1.523s
 user    1m1.497s
@@ -40,9 +79,13 @@ $ time ./benchmark 1000 500 3 24
 real    0m10.569s
 user    2m38.850s
 sys     0m2.194s
+```
 
 ##### Iteration 1
 
+Implement parallelization with tasks for the `computeGradient` loop from tsne.cpp.
+
+```
 $ time ./benchmark 1000 500 3 1
 real    0m39.523s
 user    0m39.500s
@@ -67,3 +110,5 @@ $ time ./benchmark 1000 500 3 16
 real    0m20.451s
 user    1m29.709s
 sys     0m1.843s
+```
+

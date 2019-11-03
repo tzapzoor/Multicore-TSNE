@@ -54,8 +54,10 @@ class SplitTree
 
 	int num_children;
 	std::vector<SplitTree*> children;
-public:
-	
+
+public:	
+	// Metadata helpful for running computations in parallel
+	size_t tree_size = 0;
 
 	SplitTree(double* inp_data, int N, int no_dims);
 	SplitTree(SplitTree* inp_parent, double* inp_data, double* mean_Y, double* width_Y);
