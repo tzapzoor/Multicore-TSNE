@@ -16,25 +16,20 @@
 #include <ctime>
 #include <iostream>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 //TBB
 #ifdef USE_TBB
+#include "tbb/task_scheduler_init.h"
 #include "tbb/task_group.h"
 #endif
 
-// #include "quadtree.h"
 #include "splittree.h"
 #include "vptree.h"
 #include "tsne.h"
 
-
-#ifdef _OPENMP
-    #define NUM_THREADS(N) ((N) >= 0 ? (N) : omp_get_num_procs() + (N) + 1)
+#ifdef USE_TBB
+#define NUM_THREADS(n) (n)
 #else
-    #define NUM_THREADS(N) (1)
+#define NUM_THREADS(n) (1)
 #endif
 
 
@@ -59,12 +54,9 @@ void TSNE<treeT, dist_fn>::run(double* X, int N, int D, double* Y,
             fprintf(stderr, "Perplexity too large for the number of data points! Adjusting ...\n");
     }
 
-#ifdef _OPENMP
-    omp_set_num_threads(NUM_THREADS(num_threads));
-#if _OPENMP >= 200805
-    omp_set_schedule(omp_sched_guided, 0);
-#endif
-#endif
+#ifdef USE_TBB
+    tbb::task_scheduler_init init(num_threads);
+#endif 
 
     /* 
         ======================
