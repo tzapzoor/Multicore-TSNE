@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 
     // Initialize X
     srand(random_state);
-    for (auto i = 0; i < N * D; i++)
+    for (int i = 0; i < N * D; i++)
         X[i] = randD();
 
     double perplexity = 30.0;
