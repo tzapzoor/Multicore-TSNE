@@ -21,7 +21,9 @@
 #endif
 
 //TBB
+#ifdef USE_TBB
 #include "tbb/task_group.h"
+#endif
 
 // #include "quadtree.h"
 #include "splittree.h"
@@ -230,15 +232,23 @@ double TSNE<treeT, dist_fn>::computeGradient(int* inp_row_P, int* inp_col_P, dou
         fprintf(stderr, "Memory allocation failed!\n"); exit(1); 
     }
     
+    #ifdef USE_TBB
     tbb::task_group g;
+    #endif
 
     // NoneEdge forces
     for (int n = 0; n < N; n++) {
+        #ifdef USE_TBB
         g.run([&, n] {
+        #endif
+
             double this_Q = .0;
             tree->computeNonEdgeForces(n, theta, neg_f + n * no_dims, &this_Q);
             Q[n] = this_Q;
+        
+        #ifdef USE_TBB
         });
+        #endif
     }
 
     for (int n = 0; n < N; n++) {
@@ -268,7 +278,9 @@ double TSNE<treeT, dist_fn>::computeGradient(int* inp_row_P, int* inp_col_P, dou
         }
     }
     
+    #ifdef USE_TBB
     g.wait();
+    #endif
 
     double sum_Q = 0.;
     for (int i = 0; i < N; i++) {
