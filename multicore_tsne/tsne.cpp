@@ -20,6 +20,9 @@
 #include <omp.h>
 #endif
 
+//TBB
+#include "tbb/task_group.h"
+
 // #include "quadtree.h"
 #include "splittree.h"
 #include "vptree.h"
@@ -227,9 +230,17 @@ double TSNE<treeT, dist_fn>::computeGradient(int* inp_row_P, int* inp_col_P, dou
         fprintf(stderr, "Memory allocation failed!\n"); exit(1); 
     }
     
-#ifdef _OPENMP
-    #pragma omp parallel for reduction(+:P_i_sum,C)
-#endif
+    tbb::task_group g;
+
+    // NoneEdge forces
+    for (int n = 0; n < N; n++) {
+        g.run([&](int index) {
+            double this_Q = .0;
+            tree->computeNonEdgeForces(index, theta, neg_f + index * no_dims, &this_Q);
+            Q[index] = this_Q;
+        }, n);
+    }
+
     for (int n = 0; n < N; n++) {
         // Edge forces
         int ind1 = n * no_dims;
@@ -255,13 +266,10 @@ double TSNE<treeT, dist_fn>::computeGradient(int* inp_row_P, int* inp_col_P, dou
                 pos_f[ind1 + d] += D * (Y[ind1 + d] - Y[ind2 + d]);
             }
         }
-        
-        // NoneEdge forces
-        double this_Q = .0;
-        tree->computeNonEdgeForces(n, theta, neg_f + n * no_dims, &this_Q);
-        Q[n] = this_Q;
     }
     
+    g.wait();
+
     double sum_Q = 0.;
     for (int i = 0; i < N; i++) {
         sum_Q += Q[i];
