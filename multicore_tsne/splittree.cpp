@@ -2,8 +2,15 @@
 #include <cfloat>
 #include <cstdlib>
 #include <cstdio>
+#include <vector>
 
 #include "splittree.h"
+
+
+#ifdef USE_TBB
+#include "tbb/task_group.h"
+#include "tbb/combinable.h"
+#endif
 
 
 // Checks whether a point lies in a cell
@@ -260,9 +267,40 @@ void SplitTree::computeNonEdgeForces(int point_index, double theta, double* neg_
         }
     }
     else {
+	#ifdef USE_TBB
+	tbb::task_group g;
+	tbb::combinable<std::vector<double>> combinable_sum(std::vector<double>(QT_NO_DIMS + 1, 0));
+        #endif 
+
         // Recursively apply Barnes-Hut to children
         for (int i = 0; i < num_children; ++i) {
-            children[i]->computeNonEdgeForces(point_index, theta, neg_f, sum_Q);
+	    SplitTree *child = children[i];
+            int dims = QT_NO_DIMS;
+
+            #ifdef USE_TBB
+            g.run([point_index, theta, child, &combinable_sum, dims]{
+		double *neg_f_local = &combinable_sum.local()[0];
+		double *sum_Q_local = &combinable_sum.local()[dims];
+	    #else
+		double *neg_f_local = neg_f;
+		double *sum_Q_local = sum_Q;
+            #endif
+
+                child->computeNonEdgeForces(
+                    point_index, theta, neg_f_local, sum_Q_local);
+
+            #ifdef USE_TBB
+            });
+            #endif
         }
+
+        #ifdef USE_TBB
+        g.wait();
+	combinable_sum.combine_each([&](const std::vector<double> &v) {
+		for (int d = 0; d < QT_NO_DIMS; d++)
+			neg_f[d] += v[d];
+		*sum_Q += v[QT_NO_DIMS];
+	});
+        #endif
     }
 }
