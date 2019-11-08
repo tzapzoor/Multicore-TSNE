@@ -3,8 +3,8 @@
 
 #include "tsne_lib.h"
 
-static inline double randD() {
-    return (double)rand() / (double)((unsigned)RAND_MAX + 1);
+static inline float randD() {
+    return (float)rand() / (float)((unsigned)RAND_MAX + 1);
 }
 
 int main(int argc, char *argv[]) {
@@ -18,13 +18,13 @@ int main(int argc, char *argv[]) {
     int no_dims = atoi(argv[3]);
     int num_threads = atoi(argv[4]);
 
-    double *X = (double *)malloc(N * D * sizeof(double));
+    float *X = (float *)malloc(N * D * sizeof(float));
     if (!X) {
         printf("Could not allocate memory for X");
         return 1;
     }
 
-    double *Y = (double *)malloc(N * no_dims * sizeof(double));
+    float *Y = (float *)malloc(N * no_dims * sizeof(float));
     if (!X) {
         printf("Could not allocate memory for Y");
         return 1;
@@ -35,18 +35,18 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < N * D; i++)
         X[i] = randD();
 
-    double perplexity = 30.0;
-    double theta = .5;
+    float perplexity = 30.0;
+    float theta = .5;
     int max_iter = 1000;
     int n_iter_early_exag = 250;
     int init_from_Y = false;
     int verbose = 0;
-    double early_exaggeration = 12;
-    double learning_rate = 200;
-    double *final_error = NULL;
+    float early_exaggeration = 12;
+    float learning_rate = 200;
+    float *final_error = NULL;
     int distance = 1;
 
-    tsne_run_double(
+    tsne_run_float(
         X, N, D, Y, no_dims, perplexity, theta, num_threads, max_iter, n_iter_early_exag,
         -1, init_from_Y, verbose, early_exaggeration, learning_rate, final_error, distance
     );
