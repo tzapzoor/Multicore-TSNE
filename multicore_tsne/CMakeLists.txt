@@ -10,12 +10,16 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lm")
 IF(MSVC)
     SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /fp:fast /O2")
 ELSE()
-    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fPIC -ffast-math -funroll-loops -g")
+    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fPIC -ffast-math -funroll-loops")
 ENDIF()
 
 include(TBBGet.cmake)
-tbb_get(TBB_ROOT tbb_root CONFIG_DIR TBB_DIR)
-find_package(TBB REQUIRED COMPONENTS tbbmalloc tbbmalloc_proxy tbb)
+tbb_get(TBB_ROOT tbb_root SOURCE_CODE)
+
+include(${tbb_root}/cmake/TBBBuild.cmake)
+tbb_build(TBB_ROOT ${tbb_root} CONFIG_DIR TBB_DIR)
+
+find_package(TBB REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_TBB")
 
 file(GLOB src *.cpp)
