@@ -2,10 +2,12 @@
 
 ##### Serial
 
+```
 $ time ./benchmark 1000 500 3 1
 real    0m39.296s
 user    0m39.265s
 sys     0m0.021s
+```
 
 #### TBB
 
