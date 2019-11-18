@@ -102,7 +102,7 @@ public:
         // Variable that tracks the distance to the farthest point in our results
         double tau = DBL_MAX;
 
-        // Perform the searcg
+        // Perform the search
         search(_root, target, k, heap, tau);
 
         // Gather final results
