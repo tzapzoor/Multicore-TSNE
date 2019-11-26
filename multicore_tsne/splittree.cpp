@@ -15,7 +15,7 @@
 
 // Checks whether a point lies in a cell
 bool Cell::containsPoint(double point[])
-{   
+{
     for (int i = 0; i< n_dims; ++i) {
         if (abs_d(center[i] - point[i]) > width[i]) {
             return false;
@@ -292,7 +292,7 @@ void SplitTree::computeNonEdgeForces(int point_index, double theta, double* neg_
 	    } else {
 		work();
 	    }
-        }	
+        }
 
 	if (doWork) g.wait();
 	combinable_sum.combine_each([&](const std::vector<double> &v) {

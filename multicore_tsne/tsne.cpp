@@ -372,9 +372,15 @@ void TSNE<treeT, dist_fn>::computeGaussianPerplexity(double* X, int N, int D, in
     if (verbose)
         fprintf(stderr, "Building tree...\n");
 
-    int steps_completed = 0;
+    #ifdef USE_TBB
+    tbb::task_group g;
+    #endif
+
     for (int n = 0; n < N; n++)
     {
+        #ifdef USE_TBB
+        g.run([&, n] {
+        #endif
         std::vector<double> cur_P(K);
         std::vector<DataPoint> indices;
         std::vector<double> distances;
@@ -444,14 +450,14 @@ void TSNE<treeT, dist_fn>::computeGaussianPerplexity(double* X, int N, int D, in
             val_P[row_P[n] + m] = cur_P[m];
         }
 
-        // Print progress
-        ++steps_completed;
-
-        if (verbose && steps_completed % (N / 10) == 0)
-        {
-            fprintf(stderr, " - point %d of %d\n", steps_completed, N);
-        }
+        #ifdef USE_TBB
+        });
+        #endif
     }
+
+    #ifdef USE_TBB
+    g.wait();
+    #endif
 
     // Clean up memory
     obj_X.clear();
