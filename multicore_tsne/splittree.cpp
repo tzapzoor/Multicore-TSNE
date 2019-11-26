@@ -269,11 +269,12 @@ void SplitTree::computeNonEdgeForces(int point_index, double theta, double* neg_
         }
     }
     else {
-	#ifdef USE_TBB_
+	#ifdef USE_TBB
 	tbb::task_group g;
 	tbb::combinable<std::vector<double>> combinable_sum(std::vector<double>(QT_NO_DIMS + 1, 0));
         bool doWork = tree_size > 300;
 
+        if (doWork) {
         // Recursively apply Barnes-Hut to children
         for (int i = 0; i < num_children; ++i) {
 	    SplitTree *child = children[i];
@@ -287,20 +288,16 @@ void SplitTree::computeNonEdgeForces(int point_index, double theta, double* neg_
                     point_index, theta, neg_f_local, sum_Q_local);
             };
 
-	    if (doWork) {
- 		g.run(work);
-	    } else {
-		work();
-	    }
+     		g.run(work);
         }
 
-	if (doWork) g.wait();
+	g.wait();
 	combinable_sum.combine_each([&](const std::vector<double> &v) {
 		for (int d = 0; d < QT_NO_DIMS; d++)
 			neg_f[d] += v[d];
 		*sum_Q += v[QT_NO_DIMS];
 	});
-
+        } else {
         #else
 
 	// Recursively apply Barnes-Hut to children
@@ -310,6 +307,10 @@ void SplitTree::computeNonEdgeForces(int point_index, double theta, double* neg_
                     point_index, theta, neg_f, sum_Q);
 	}
 	
-	#endif	
+	#endif
+
+    #ifdef USE_TBB
+        }
+    #endif
     }
 }
