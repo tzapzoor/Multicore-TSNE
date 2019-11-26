@@ -373,9 +373,6 @@ void TSNE<treeT, dist_fn>::computeGaussianPerplexity(double* X, int N, int D, in
         fprintf(stderr, "Building tree...\n");
 
     int steps_completed = 0;
-#ifdef _OPENMP
-    #pragma omp parallel for
-#endif
     for (int n = 0; n < N; n++)
     {
         std::vector<double> cur_P(K);
@@ -448,16 +445,10 @@ void TSNE<treeT, dist_fn>::computeGaussianPerplexity(double* X, int N, int D, in
         }
 
         // Print progress
-#ifdef _OPENMP
-        #pragma omp atomic
-#endif
         ++steps_completed;
 
         if (verbose && steps_completed % (N / 10) == 0)
         {
-#ifdef _OPENMP
-            #pragma omp critical
-#endif
             fprintf(stderr, " - point %d of %d\n", steps_completed, N);
         }
     }
