@@ -238,38 +238,35 @@ double TSNE<treeT, dist_fn>::computeGradient(int* inp_row_P, int* inp_col_P, dou
             tree->computeNonEdgeForces(n, theta, neg_f + n * no_dims, &this_Q);
             Q[n] = this_Q;
         
+            // Edge forces
+            int ind1 = n * no_dims;
+            for (int i = inp_row_P[n]; i < inp_row_P[n + 1]; i++) {
+                // Compute pairwise distance and Q-value
+                double D = .0;
+                int ind2 = inp_col_P[i] * no_dims;
+                for (int d = 0; d < no_dims; d++) {
+                    double t = Y[ind1 + d] - Y[ind2 + d];
+                    D += t * t;
+                }
+                
+                // Sometimes we want to compute error on the go
+                if (eval_error) {
+                    P_i_sum += inp_val_P[i];
+                    C += inp_val_P[i] * log((inp_val_P[i] + FLT_MIN) / ((1.0 / (1.0 + D)) + FLT_MIN));
+                }
+
+                D = inp_val_P[i] / (1.0 + D);
+                // Sum positive force
+                for (int d = 0; d < no_dims; d++) {
+                    pos_f[ind1 + d] += D * (Y[ind1 + d] - Y[ind2 + d]);
+                }
+            }
+
         #ifdef USE_TBB
         });
         #endif
     }
 
-    for (int n = 0; n < N; n++) {
-        // Edge forces
-        int ind1 = n * no_dims;
-        for (int i = inp_row_P[n]; i < inp_row_P[n + 1]; i++) {
-
-            // Compute pairwise distance and Q-value
-            double D = .0;
-            int ind2 = inp_col_P[i] * no_dims;
-            for (int d = 0; d < no_dims; d++) {
-                double t = Y[ind1 + d] - Y[ind2 + d];
-                D += t * t;
-            }
-            
-            // Sometimes we want to compute error on the go
-            if (eval_error) {
-                P_i_sum += inp_val_P[i];
-                C += inp_val_P[i] * log((inp_val_P[i] + FLT_MIN) / ((1.0 / (1.0 + D)) + FLT_MIN));
-            }
-
-            D = inp_val_P[i] / (1.0 + D);
-            // Sum positive force
-            for (int d = 0; d < no_dims; d++) {
-                pos_f[ind1 + d] += D * (Y[ind1 + d] - Y[ind2 + d]);
-            }
-        }
-    }
-    
     #ifdef USE_TBB
     g.wait();
     #endif
