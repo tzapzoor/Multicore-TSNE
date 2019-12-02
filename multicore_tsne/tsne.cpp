@@ -310,9 +310,6 @@ double TSNE<treeT, dist_fn>::evaluateError(int* row_P, int* col_P, double* val_P
     
     // Loop over all edges to compute t-SNE error
     double C = .0;
-#ifdef _OPENMP
-    #pragma omp parallel for reduction(+:C)
-#endif
     for (int n = 0; n < N; n++) {
         int ind1 = n * no_dims;
         for (int i = row_P[n]; i < row_P[n + 1]; i++) {
