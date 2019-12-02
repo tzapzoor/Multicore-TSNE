@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
     double perplexity = 30.0;
     double theta = .5;
-    int max_iter = 1000;
+    int max_iter = 300;
     int n_iter_early_exag = 250;
     int init_from_Y = false;
     int verbose = 0;
