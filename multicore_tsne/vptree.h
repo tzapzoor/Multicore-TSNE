@@ -196,29 +196,8 @@ private:
             // Recursively build tree
             node->index = lower;
 
-            #ifdef USE_TBB
-            tbb::task_group g;
-            #endif
-
-            #ifdef USE_TBB
-            g.run([&]{
-            #endif
             node->left = buildFromPoints(lower + 1, median);
-            #ifdef USE_TBB
-            });
-            #endif
-
-            #ifdef USE_TBB
-            g.run([&]{
-            #endif
             node->right = buildFromPoints(median, upper);
-            #ifdef USE_TBB
-            });
-            #endif
-
-            #ifdef USE_TBB
-            g.wait();
-            #endif
         }
 
         // Return result
